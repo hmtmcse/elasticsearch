@@ -13,10 +13,10 @@ public class Java {
     public static void main(String[] args) {
 
         MySQLToElastic mySQLToElastic = new MySQLToElastic();
-        mySQLToElastic.makeSchema("matview_corona_screening_stats");
+        mySQLToElastic.makeSchema("");
 
 //        try {
-//            JMQuery jmQuery = new JMQuery("localhost", "root", "", "cmed_prod_db");
+//            JMQuery jmQuery = new JMQuery("localhost", "root", "", "_db");
 //            ResultSet resultSet = jmQuery.selectSQL("SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = 'matview_corona_screening_stats'");
 //            System.out.println("");
 //            System.out.println("");

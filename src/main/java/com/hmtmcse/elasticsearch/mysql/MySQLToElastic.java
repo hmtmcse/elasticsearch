@@ -20,11 +20,13 @@ public class MySQLToElastic {
     private String SELECT_TABLE_INFO = "SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ";
     private String SELECT_ALL = "SELECT * FROM ";
     private ESSchema esSchema;
+    private JsonProcessor jsonProcessor;
 
 
     public void init() {
         jmQuery = new JMQuery(ESConfig.instance().mysqlHost, ESConfig.instance().mysqlUsername, ESConfig.instance().mysqlPassword, ESConfig.instance().mysqlDatabase);
         esSchema = new ESSchema();
+        jsonProcessor = new JsonProcessor();
     }
 
     private void addField(String name, String mysqlType) {
@@ -126,25 +128,40 @@ public class MySQLToElastic {
         return new ArrayList<>();
     }
 
+    public String bulkInsertDocument(LinkedHashMap<String, Object> data){
+        String response = "";
+        try{
+            response += "{ \"index\":{} }\n";
+            response += jsonProcessor.klassToString(data) + "\n";
+        } catch (Parser4JavaException e) {
+            e.printStackTrace();
+        }
+        return response;
+    }
+
     public void prepareSelectData(String tableName) {
         makeSchema(tableName);
-        List<LinkedHashMap<String, Object>> createList = new ArrayList<>();
+        StringBuilder stringBuilder = new StringBuilder();
         try {
             List<String> availableColumn = getAllowedColumn(tableName);
+            String response = "";
             if (availableColumn.size() != 0){
                 LinkedHashMap<String, Object> map;
-                String sql = SELECT_ALL + tableName + " LIMIT 1";
+                String sql = SELECT_ALL + tableName + " LIMIT 100";
                 ResultSet resultSet = jmQuery.selectSQL(sql);
                 while (resultSet.next()){
                     map = new LinkedHashMap<>();
                     for ( String columnName : availableColumn){
                         map.put(columnName, resultSet.getObject(columnName));
                     }
-                    createList.add(map);
+                    response = bulkInsertDocument(map);
+                    if (!response.equals("")){
+                        stringBuilder.append(response);
+                    }
                 }
             }
-            System.out.println(new JsonProcessor().klassToString(createList, true));
-        } catch (JavaMySQLException | SQLException | Parser4JavaException e) {
+            System.out.println(stringBuilder);
+        } catch (JavaMySQLException | SQLException e) {
             e.printStackTrace();
         }
 

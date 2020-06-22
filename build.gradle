@@ -12,7 +12,11 @@ repositories {
 
 
 
-def dependencyList = []
+def dependencyList = [
+        "java-http-util",
+        "java-mysql-util",
+        "parser4java",
+]
 
 
 dependencies {

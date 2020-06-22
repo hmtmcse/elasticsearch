@@ -1,0 +1,88 @@
+
+group 'com.hmtmcse.elasticsearch'
+version '1.0.0'
+
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url "https://dl.bintray.com/hmtmcse/maven/" }
+    maven { url "http://central.maven.org/maven2/" }
+}
+
+
+
+def dependencyList = []
+
+
+dependencies {
+    dependencyList.each {
+        if (findProject(":" + it)){
+            compile project(":" + it)
+        }
+    }
+}
+
+Boolean isPublish = false
+if (isPublish) {
+    bintray {
+
+        user = (project.hasProperty('bintrayUser') ? project.property('bintrayUser') : "hmtmcse" )
+        key =  (project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : "123" )
+        publish = true
+        override = true
+        publications = ['mavenJava']
+        pkg {
+            repo = 'maven'
+            name = 'com.hmtmcse.elasticsearch'
+            vcsUrl = 'https://github.com/hmtmcse/elasticsearch.git'
+            licenses = ['Apache-2.0']
+        }
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = 'elasticsearch'
+                groupId = 'com.hmtmcse'
+                from components.java
+                artifact sourcesJar
+                versionMapping {
+                    usage('java-api') {
+                        fromResolutionOf('runtimeClasspath')
+                    }
+                    usage('java-runtime') {
+                        fromResolutionResult()
+                    }
+                }
+                pom {
+                    name = 'Java __template__ Util'
+                    description = 'Thtis it the library of elasticsearch'
+                    url = 'http://www.hmtmcse.com/app-and-lib/java/elasticsearch'
+                    licenses {
+                        license {
+                            name = 'The Apache License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'hmtmcse'
+                            name = 'H.M Touhid Mia'
+                            email = 'hmtm.cse@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:https://github.com/hmtmcse/elasticsearch.git'
+                        developerConnection = 'scm:git:https://github.com/hmtmcse/elasticsearch.git'
+                        url = 'https://github.com/hmtmcse/elasticsearch'
+                    }
+                }
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
+    }
+}

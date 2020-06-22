@@ -2,6 +2,9 @@ package com.hmtmcse.elasticsearch.mysql;
 
 import com.hmtmcse.elasticsearch.common.ESConfig;
 import com.hmtmcse.elasticsearch.schema.ESSchema;
+import com.hmtmcse.httputil.HttpExceptionHandler;
+import com.hmtmcse.httputil.HttpResponse;
+import com.hmtmcse.httputil.HttpUtil;
 import com.hmtmcse.parser4java.JsonProcessor;
 import com.hmtmcse.parser4java.common.Parser4JavaException;
 import com.hmtmcse.tmutil.mysql.JMQuery;
@@ -154,19 +157,18 @@ public class MySQLToElastic {
 
     public void prepareSelectData(String tableName) {
         makeSchema(tableName);
+        HttpUtil httpUtil = new HttpUtil();
         try {
             List<String> availableColumn = getAllowedColumn(tableName);
             String response = "";
             if (availableColumn.size() != 0){
                 LinkedHashMap<String, Object> map;
-                Integer total = count(tableName);
+                Integer total = 20; //count(tableName);
                 Integer offset = 0;
                 Double loop = Math.ceil(Double.valueOf(total) / itemPerChunk);
                 for (Integer index = 0; index < loop.intValue(); index++){
                     offset = index * itemPerChunk;
-                    System.out.println(offset + " " + itemPerChunk);
                     String sql = SELECT_ALL + tableName + " LIMIT " + offset + ", " + itemPerChunk;
-                    System.out.println(sql);
                     ResultSet resultSet = jmQuery.selectSQL(sql);
                     StringBuilder stringBuilder = new StringBuilder();
                     while (resultSet.next()){
@@ -179,10 +181,11 @@ public class MySQLToElastic {
                             stringBuilder.append(response);
                         }
                     }
-                    System.out.println(stringBuilder);
+                    HttpResponse res = httpUtil.jsonPost("http://localhost:9200/data_entry/_bulk", stringBuilder.toString()).send();
+                    System.out.println(res.getHttpCode() + " " + res.getContent());
                 }
             }
-        } catch (JavaMySQLException | SQLException e) {
+        } catch (JavaMySQLException | SQLException | HttpExceptionHandler e) {
             e.printStackTrace();
         }
 

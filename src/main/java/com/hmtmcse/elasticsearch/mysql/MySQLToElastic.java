@@ -6,12 +6,16 @@ import com.hmtmcse.tmutil.mysql.JMQuery;
 import com.hmtmcse.tmutil.mysql.JavaMySQLException;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MySQLToElastic {
 
     private JMQuery jmQuery;
     private String SELECT_TABLE_INFO = "SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ";
+    private String SELECT_ALL = "SELECT * FROM ";
     private ESSchema esSchema;
 
 
@@ -65,24 +69,63 @@ public class MySQLToElastic {
             while (resultSet.next()){
                 createSchema(resultSet);
             }
-            System.out.println(esSchema.getMappings());
         } catch (JavaMySQLException | SQLException e) {
             e.printStackTrace();
         }
     }
 
     public String getSchema(String tableName) {
-        String schema = "{}";
+        makeSchema(tableName);
+        return esSchema.getMappings();
+    }
+
+
+    private List<String> getAvailableColumn(ResultSet resultSet) {
+        List<String> list = new ArrayList<>();
         try {
-            String sql = SELECT_TABLE_INFO + "'" + tableName + "'";
-            ResultSet resultSet = jmQuery.selectSQL(sql);
-            while (resultSet.next()){
-                createSchema(resultSet);
+            ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+            int numberOfColumns = resultSetMetaData.getColumnCount();
+            for (int i = 1; i < numberOfColumns + 1; i++) {
+                String columnName = resultSetMetaData.getColumnName(i);
+                if (columnName != null && esSchema != null && esSchema.property().isFieldAvailable(columnName)) {
+                    list.add(columnName);
+                }
             }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return list;
+    }
+
+    private void availableColumn(ResultSet resultSet) throws SQLException {
+        ResultSetMetaData rsMetaData = resultSet.getMetaData();
+        int numberOfColumns = rsMetaData.getColumnCount();
+
+        for (int i = 1; i < numberOfColumns + 1; i++) {
+            String columnName = rsMetaData.getColumnName(i);
+
+            System.out.println(columnName);
+
+//            if ("theColumn".equals(columnName)) {
+//                System.out.println("Bingo!");
+//            }
+        }
+    }
+
+
+    public void prepareSelectData(String tableName) {
+        makeSchema(tableName);
+        try {
+            String sql = SELECT_ALL + tableName + " LIMIT 0";
+            ResultSet resultSet = jmQuery.selectSQL(sql);
+            availableColumn(resultSet);
+//            while (resultSet.next()){
+//
+//            }
         } catch (JavaMySQLException | SQLException e) {
             e.printStackTrace();
         }
-        return schema;
+
     }
 
 }

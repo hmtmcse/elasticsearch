@@ -1,11 +1,7 @@
 package com.hmtmcse.elasticsearch;
 
 import com.hmtmcse.elasticsearch.mysql.MySQLToElastic;
-import com.hmtmcse.tmutil.mysql.JMQuery;
-import com.hmtmcse.tmutil.mysql.JavaMySQLException;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class Java {
 

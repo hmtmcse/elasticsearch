@@ -46,4 +46,11 @@ public class Properties {
         return addField(name, "short");
     }
 
+    public Boolean isFieldAvailable(String name) {
+        if (properties.get(name) == null) {
+            return false;
+        }
+        return true;
+    }
+
 }

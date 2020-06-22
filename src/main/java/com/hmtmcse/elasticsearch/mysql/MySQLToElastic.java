@@ -2,6 +2,8 @@ package com.hmtmcse.elasticsearch.mysql;
 
 import com.hmtmcse.elasticsearch.common.ESConfig;
 import com.hmtmcse.elasticsearch.schema.ESSchema;
+import com.hmtmcse.parser4java.JsonProcessor;
+import com.hmtmcse.parser4java.common.Parser4JavaException;
 import com.hmtmcse.tmutil.mysql.JMQuery;
 import com.hmtmcse.tmutil.mysql.JavaMySQLException;
 
@@ -9,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class MySQLToElastic {
@@ -112,17 +115,36 @@ public class MySQLToElastic {
         }
     }
 
-
-    public void prepareSelectData(String tableName) {
-        makeSchema(tableName);
+    public List<String> getAllowedColumn(String tableName) {
         try {
             String sql = SELECT_ALL + tableName + " LIMIT 0";
             ResultSet resultSet = jmQuery.selectSQL(sql);
-            availableColumn(resultSet);
-//            while (resultSet.next()){
-//
-//            }
-        } catch (JavaMySQLException | SQLException e) {
+            return getAvailableColumn(resultSet);
+        } catch (JavaMySQLException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
+    }
+
+    public void prepareSelectData(String tableName) {
+        makeSchema(tableName);
+        List<LinkedHashMap<String, Object>> createList = new ArrayList<>();
+        try {
+            List<String> availableColumn = getAllowedColumn(tableName);
+            if (availableColumn.size() != 0){
+                LinkedHashMap<String, Object> map;
+                String sql = SELECT_ALL + tableName + " LIMIT 1";
+                ResultSet resultSet = jmQuery.selectSQL(sql);
+                while (resultSet.next()){
+                    map = new LinkedHashMap<>();
+                    for ( String columnName : availableColumn){
+                        map.put(columnName, resultSet.getObject(columnName));
+                    }
+                    createList.add(map);
+                }
+            }
+            System.out.println(new JsonProcessor().klassToString(createList, true));
+        } catch (JavaMySQLException | SQLException | Parser4JavaException e) {
             e.printStackTrace();
         }
 

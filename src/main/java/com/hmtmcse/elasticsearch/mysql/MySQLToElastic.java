@@ -19,8 +19,10 @@ public class MySQLToElastic {
     private JMQuery jmQuery;
     private String SELECT_TABLE_INFO = "SELECT COLUMN_NAME, DATA_TYPE, COLUMN_TYPE, CHARACTER_MAXIMUM_LENGTH, NUMERIC_PRECISION, NUMERIC_SCALE FROM INFORMATION_SCHEMA.COLUMNS WHERE table_name = ";
     private String SELECT_ALL = "SELECT * FROM ";
+    private String COUNT = "SELECT COUNT(*) as rowcount FROM ";
     private ESSchema esSchema;
     private JsonProcessor jsonProcessor;
+    public Integer itemPerChunk = 5;
 
 
     public void init() {
@@ -139,28 +141,47 @@ public class MySQLToElastic {
         return response;
     }
 
+    public Integer count(String tableName) {
+        try {
+            ResultSet resultSet = jmQuery.selectSQL(COUNT + tableName);
+            resultSet.next();
+            return resultSet.getInt("rowcount");
+        } catch (JavaMySQLException | SQLException e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     public void prepareSelectData(String tableName) {
         makeSchema(tableName);
-        StringBuilder stringBuilder = new StringBuilder();
         try {
             List<String> availableColumn = getAllowedColumn(tableName);
             String response = "";
             if (availableColumn.size() != 0){
                 LinkedHashMap<String, Object> map;
-                String sql = SELECT_ALL + tableName + " LIMIT 100";
-                ResultSet resultSet = jmQuery.selectSQL(sql);
-                while (resultSet.next()){
-                    map = new LinkedHashMap<>();
-                    for ( String columnName : availableColumn){
-                        map.put(columnName, resultSet.getObject(columnName));
+                Integer total = count(tableName);
+                Integer offset = 0;
+                Double loop = Math.ceil(Double.valueOf(total) / itemPerChunk);
+                for (Integer index = 0; index < loop.intValue(); index++){
+                    offset = index * itemPerChunk;
+                    System.out.println(offset + " " + itemPerChunk);
+                    String sql = SELECT_ALL + tableName + " LIMIT " + offset + ", " + itemPerChunk;
+                    System.out.println(sql);
+                    ResultSet resultSet = jmQuery.selectSQL(sql);
+                    StringBuilder stringBuilder = new StringBuilder();
+                    while (resultSet.next()){
+                        map = new LinkedHashMap<>();
+                        for ( String columnName : availableColumn){
+                            map.put(columnName, resultSet.getObject(columnName));
+                        }
+                        response = bulkInsertDocument(map);
+                        if (!response.equals("")){
+                            stringBuilder.append(response);
+                        }
                     }
-                    response = bulkInsertDocument(map);
-                    if (!response.equals("")){
-                        stringBuilder.append(response);
-                    }
+                    System.out.println(stringBuilder);
                 }
             }
-            System.out.println(stringBuilder);
         } catch (JavaMySQLException | SQLException e) {
             e.printStackTrace();
         }

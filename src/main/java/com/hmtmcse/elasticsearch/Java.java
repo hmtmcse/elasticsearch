@@ -7,7 +7,6 @@ public class Java {
 
 
     public static void main(String[] args) {
-
         MySQLToElastic mySQLToElastic = new MySQLToElastic();
         mySQLToElastic.makeSchema("");
 

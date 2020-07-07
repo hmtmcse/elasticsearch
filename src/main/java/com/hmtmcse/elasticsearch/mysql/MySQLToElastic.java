@@ -25,7 +25,7 @@ public class MySQLToElastic {
     private String COUNT = "SELECT COUNT(*) as rowcount FROM ";
     private ESSchema esSchema;
     private JsonProcessor jsonProcessor;
-    public Integer itemPerChunk = 5;
+    public Integer itemPerChunk = 50000;
 
 
     public void init() {
@@ -163,7 +163,7 @@ public class MySQLToElastic {
             String response = "";
             if (availableColumn.size() != 0){
                 LinkedHashMap<String, Object> map;
-                Integer total = 20; //count(tableName);
+                Integer total = count(tableName);
                 Integer offset = 0;
                 Double loop = Math.ceil(Double.valueOf(total) / itemPerChunk);
                 for (Integer index = 0; index < loop.intValue(); index++){
@@ -181,8 +181,11 @@ public class MySQLToElastic {
                             stringBuilder.append(response);
                         }
                     }
-                    HttpResponse res = httpUtil.jsonPost("http://localhost:9200/data_entry/_bulk", stringBuilder.toString()).send();
-                    System.out.println(res.getHttpCode() + " " + res.getContent());
+                    System.out.println("Total Imported: " + offset + " Total: " + total + " Left: " + (total - offset));
+                    HttpResponse res = httpUtil.jsonPost("http://localhost:9200/reporting/_bulk", stringBuilder.toString()).send();
+//                    System.out.println(res.getHttpCode() + " " + res.getContent() + "\n");
+                    System.out.println(res.getHttpCode());
+                    System.out.println("\n\n");
                 }
             }
         } catch (JavaMySQLException | SQLException | HttpExceptionHandler e) {

@@ -1,0 +1,96 @@
+{
+  "mappings": {
+    "properties": {
+      "view_last_updated": {
+        "type": "date"
+      },
+      "id": {
+        "type": "long"
+      },
+      "gender": {
+        "type": "integer"
+      },
+      "birthday": {
+        "type": "date"
+      },
+      "name": {
+        "type": "keyword"
+      },
+      "name_bn": {
+        "type": "keyword"
+      },
+      "code": {
+        "type": "keyword"
+      },
+      "agent_path": {
+        "type": "keyword"
+      },
+      "attr_order": {
+        "type": "integer"
+      },
+      "created_by_id": {
+        "type": "long"
+      },
+      "measured_at": {
+        "type": "date"
+      },
+      "input": {
+        "type": "integer"
+      },
+      "value": {
+        "type": "double"
+      },
+      "user_id": {
+        "type": "long"
+      },
+      "result_status": {
+        "type": "keyword"
+      },
+      "result_status_bn": {
+        "type": "keyword"
+      },
+      "color_code": {
+        "type": "keyword"
+      },
+      "division_id": {
+        "type": "long"
+      },
+      "district_id": {
+        "type": "long"
+      },
+      "upazila_id": {
+        "type": "long"
+      },
+      "union_id": {
+        "type": "long"
+      },
+      "risk_value": {
+        "type": "integer"
+      },
+      "division_name_en": {
+        "type": "keyword"
+      },
+      "district_name_en": {
+        "type": "keyword"
+      },
+      "upazilla_name_en": {
+        "type": "keyword"
+      },
+      "union_name_en": {
+        "type": "keyword"
+      },
+      "division_name_bn": {
+        "type": "keyword"
+      },
+      "district_name_bn": {
+        "type": "keyword"
+      },
+      "upazilla_name_bn": {
+        "type": "keyword"
+      },
+      "union_name_bn": {
+        "type": "keyword"
+      }
+    }
+  }
+}

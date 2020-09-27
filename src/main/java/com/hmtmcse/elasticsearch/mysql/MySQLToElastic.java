@@ -30,6 +30,7 @@ public class MySQLToElastic {
 
     public void init() {
         jmQuery = new JMQuery(ESConfig.instance().mysqlHost, ESConfig.instance().mysqlUsername, ESConfig.instance().mysqlPassword, ESConfig.instance().mysqlDatabase);
+        jmQuery.getCredential().serverPort = ESConfig.instance().mysqlPort;
         esSchema = new ESSchema();
         jsonProcessor = new JsonProcessor();
     }
@@ -43,7 +44,7 @@ public class MySQLToElastic {
             case "bigint":
                 esSchema.property().addLong(name);
                 break;
-            case "tinyint ":
+            case "tinyint":
                 esSchema.property().addShortInt(name);
                 break;
             case "varchar":
